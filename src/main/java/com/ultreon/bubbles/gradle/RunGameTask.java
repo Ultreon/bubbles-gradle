@@ -3,7 +3,6 @@ package com.ultreon.bubbles.gradle;
 import com.google.gson.Gson;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
 import org.gradle.process.ExecResult;
 
@@ -64,7 +63,7 @@ public class RunGameTask extends BaseTask {
         this.env.putAll(env);
     }
 
-    @InputFile
+    @Internal
     public File getRunDir() {
         return runDir;
     }

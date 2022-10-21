@@ -2,7 +2,9 @@ package com.ultreon.bubbles.gradle;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
+import org.gradle.api.tasks.TaskContainer;
 
 import javax.annotation.Nonnull;
 
@@ -21,6 +23,8 @@ public class BubblesGradlePlugin implements Plugin<Project> {
     @Override
     public void apply(@Nonnull Project project) {
         RepositoryHandler repositories = project.getRepositories();
+        ConfigurationContainer configurations = project.getConfigurations();
+        TaskContainer tasks = project.getTasks();
         repositories.maven(it -> {
             it.setName("Bubble Blaster Maven");
             it.setUrl(project.uri("https://maven.pkg.github.com/Ultreon/bubble-blaster-2"));
@@ -53,5 +57,11 @@ public class BubblesGradlePlugin implements Plugin<Project> {
             it.setName("JitPack");
             it.setUrl(project.uri("https://jitpack.io/"));
         });
+
+        configurations.getByName("api").setCanBeResolved(true);
+
+        tasks.register("runGame", RunGameTask.class);
+        tasks.register("runGameDebug", RunGameTask.class, task -> task.args("--debug"));
+        tasks.register("runGameDev", RunGameTask.class, task -> task.args("--dev"));
     }
 }

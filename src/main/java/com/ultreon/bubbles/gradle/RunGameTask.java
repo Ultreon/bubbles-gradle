@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class RunGameTask extends BaseTask {
     private File runDir;
     private final List<String> args = new ArrayList<>();
@@ -52,12 +53,10 @@ public class RunGameTask extends BaseTask {
         return list;
     }
 
-    @Internal
     public void args(String... args) {
         this.args.addAll(List.of(args));
     }
 
-    @Internal
     public void env(Map<String, Object> env) {
         this.env.putAll(env);
     }
@@ -67,7 +66,6 @@ public class RunGameTask extends BaseTask {
         return runDir;
     }
 
-    @InputFile
     public void setRunDir(File runDir) {
         this.runDir = runDir;
     }
@@ -77,7 +75,6 @@ public class RunGameTask extends BaseTask {
         return maxHeapSize;
     }
 
-    @Internal
     public void setMaxHeapSize(String maxHeapSize) {
         this.maxHeapSize = maxHeapSize;
     }

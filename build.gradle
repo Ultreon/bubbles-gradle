@@ -1,21 +1,54 @@
+import static java.lang.System.getenv
+
 plugins {
     id 'java-gradle-plugin' // so we can assign and ID to our plugin
+    id 'maven-publish'
 }
 
+//****************************//
+// Setting up main properties //
+//****************************//
+def calendar = Calendar.getInstance()
+def date = String.format("%01dy%02dm%02dd", calendar.get(Calendar.YEAR) - 2000, calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+def time = String.format("%01dh%02dm%02ds", calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND))
+
+version "${project_version}+${getenv("GITHUB_BUILD_NUMBER") == null ? "$date+$time" : getenv("GITHUB_BUILD_NUMBER")}"
+group "com.ultreon"
+
 dependencies {
-    api 'org.ow2.asm:asm:8.0.1'
-    api 'com.google.code.gson:gson:2.8.+'
+    api 'org.ow2.asm:asm:9.4'
+    api 'com.google.code.gson:gson:2.9.0'
 }
 
 repositories {
     mavenCentral()
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/Ultreon/bubbles-gradle"
+            credentials {
+                username = getenv("GITHUB_ACTOR")
+                password = getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
+publish.dependsOn build
+
 gradlePlugin {
     plugins {
         // here we register our plugin with an ID
-        register("bubbles-gradle") {
-            id = "bubbles-gradle"
+        register("com.ultreon.bubbles-gradle") {
+            id = "com.ultreon.bubbles-gradle"
             implementationClass = "com.ultreon.bubbles.gradle.BubblesGradlePlugin"
         }
     }

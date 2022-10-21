@@ -45,6 +45,7 @@ public class RunGameTask extends BaseTask {
             exec.setArgs(strings);
             exec.setEnvironment(env);
             exec.setWorkingDir(runDir);
+            exec.setClasspath(project.getConfigurations().getByName("runtimeClasspath").plus(project.getConfigurations().getByName("compileClasspath")));
         });
         result.assertNormalExitValue();
     }

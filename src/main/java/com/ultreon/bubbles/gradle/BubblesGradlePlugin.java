@@ -7,6 +7,7 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.tasks.TaskContainer;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 public class BubblesGradlePlugin implements Plugin<Project> {
@@ -60,8 +61,12 @@ public class BubblesGradlePlugin implements Plugin<Project> {
 
         configurations.getByName("api").setCanBeResolved(true);
 
-        tasks.register("runGame", RunGameTask.class);
-        tasks.register("runGameDebug", RunGameTask.class, task -> task.args("--debug"));
-        tasks.register("runGameDev", RunGameTask.class, task -> task.args("--dev"));
+        tasks.register("prepareRunGame", PrepareRunGameTask.class);
+        tasks.register("prepareRunGameDebug", PrepareRunGameTask.class, task -> task.args("--debug"));
+        tasks.register("prepareRunGameDev", PrepareRunGameTask.class, task -> task.args("--dev"));
+
+        if (Objects.equals(project.getRootProject(), project)) {
+            tasks.register("ideaSync", IdeaSyncTask.class);
+        }
     }
 }

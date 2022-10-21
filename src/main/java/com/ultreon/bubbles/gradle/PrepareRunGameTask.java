@@ -4,8 +4,6 @@ import com.google.gson.Gson;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.Internal;
-import org.gradle.internal.os.OperatingSystem;
-import org.gradle.process.ExecResult;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,14 +12,15 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public class RunGameTask extends BaseTask {
+public class PrepareRunGameTask extends BaseTask {
     private File runDir;
     private final List<String> args = new ArrayList<>();
-    private final Map<String, Object> env = new HashMap<>();
+    private final Map<String, String> env = new HashMap<>();
+    private final Map<String, String> props = new HashMap<>();
     private final Map<String, List<String>> modMappings = new HashMap<>();
     private String maxHeapSize;
 
-    public RunGameTask() {
+    public PrepareRunGameTask() {
         super("bubbles");
         runDir = getProject().file("run/main/");
     }
@@ -32,26 +31,6 @@ public class RunGameTask extends BaseTask {
         if (!runDir.exists()) {
             project.mkdir(runDir);
         }
-
-        List<String> strings = new ArrayList<>(args);
-        strings.add(0, "gameDir=" + runDir);
-        List<String> devClassPath = buildDevClassPath(project);
-
-        Map<String, Object> env = new HashMap<>(this.env);
-        Gson gson = new Gson();
-        env.put("DEV_CLASS_PATH", gson.toJson(modMappings));
-        ExecResult result = project.javaexec(exec -> {
-            exec.setMaxHeapSize(maxHeapSize);
-            exec.getMainClass().set("com.ultreon.dev.GameDevMain");
-            exec.setArgs(strings);
-            exec.setEnvironment(env);
-            exec.setWorkingDir(runDir);
-            exec.setClasspath(project.getConfigurations().getByName("runtimeClasspath").plus(project.getConfigurations().getByName("compileClasspath")));
-            if (OperatingSystem.current() == OperatingSystem.LINUX) {
-                exec.environment("DISPLAY", ":0");
-            }
-        });
-        result.assertNormalExitValue();
     }
 
     private List<String> buildDevClassPath(Project project) {
@@ -64,8 +43,12 @@ public class RunGameTask extends BaseTask {
         this.args.addAll(List.of(args));
     }
 
-    public void env(Map<String, Object> env) {
+    public void env(Map<String, String> env) {
         this.env.putAll(env);
+    }
+
+    public void props(Map<String, String> env) {
+        this.props.putAll(env);
     }
 
     @Internal
@@ -88,5 +71,25 @@ public class RunGameTask extends BaseTask {
 
     public void modMapping(String id, File file) {
         modMappings.computeIfAbsent(id, s -> new ArrayList<>()).add(file.getAbsolutePath());
+    }
+
+    @Internal
+    public Map<String, String> getProps() {
+        return props;
+    }
+
+    @Internal
+    public List<String> getArgs() {
+        List<String> args = new ArrayList<>(this.args);
+        args.add(0, "gameDir=" + runDir);
+        return args;
+    }
+
+    @Internal
+    public Map<String, String> getEnv() {
+        Map<String, String> env = new HashMap<>(this.env);
+        Gson gson = new Gson();
+        env.put("DEV_CLASS_PATH", gson.toJson(modMappings));
+        return env;
     }
 }

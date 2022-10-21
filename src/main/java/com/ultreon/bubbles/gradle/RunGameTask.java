@@ -1,5 +1,6 @@
 package com.ultreon.bubbles.gradle;
 
+import com.google.gson.Gson;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.InputFile;
@@ -17,6 +18,7 @@ public class RunGameTask extends BaseTask {
     private File runDir;
     private final List<String> args = new ArrayList<>();
     private final Map<String, Object> env = new HashMap<>();
+    private final Map<String, List<String>> modMappings = new HashMap<>();
     private String maxHeapSize;
 
     public RunGameTask() {
@@ -36,7 +38,8 @@ public class RunGameTask extends BaseTask {
         List<String> devClassPath = buildDevClassPath(project);
 
         Map<String, Object> env = new HashMap<>(this.env);
-        env.put("DEV_CLASS_PATH", String.join(System.getProperty("path.seperator"), devClassPath));
+        Gson gson = new Gson();
+        env.put("DEV_CLASS_PATH", gson.toJson(modMappings));
         ExecResult result = project.javaexec(exec -> {
             exec.setMaxHeapSize(maxHeapSize);
             exec.getMainClass().set("com.ultreon.dev.GameDevMain");
@@ -77,5 +80,9 @@ public class RunGameTask extends BaseTask {
 
     public void setMaxHeapSize(String maxHeapSize) {
         this.maxHeapSize = maxHeapSize;
+    }
+
+    public void modMapping(String id, File file) {
+        modMappings.computeIfAbsent(id, s -> new ArrayList<>()).add(file.getAbsolutePath());
     }
 }

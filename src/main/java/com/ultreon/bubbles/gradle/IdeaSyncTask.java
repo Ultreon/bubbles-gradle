@@ -3,6 +3,7 @@ package com.ultreon.bubbles.gradle;
 import kotlin.Unit;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.plugins.ide.idea.model.IdeaModel;
 import org.gradle.plugins.ide.idea.model.IdeaProject;
@@ -38,7 +39,14 @@ public class IdeaSyncTask extends BaseTask {
             return;
         }
 
-        tasks.withType(PrepareRunGameTask.class).forEach(prepareTask -> {
+        TaskCollection<PrepareRunGameTask> prepareRunGameTasks = tasks.withType(PrepareRunGameTask.class);
+        getLogger().info("Creating " + prepareRunGameTasks.size() + " run configs.");
+
+        if (prepareRunGameTasks.isEmpty()) {
+            getLogger().warn("There are no prepare run game tasks bruh.");
+        }
+
+        prepareRunGameTasks.forEach(prepareTask -> {
             var taskName = prepareTask.getName();
             var mainClass = "com.ultreon.dev.GameDevMain";
             var props = prepareTask.getProps();
@@ -52,6 +60,7 @@ public class IdeaSyncTask extends BaseTask {
                 return name;
             }).collect(Collectors.joining(" "));
 
+            getLogger().info("Create run config: " + taskName);
             idea.project(proj -> IdeaModelUtilsKt.settings(ideaProj, settings -> {
                 IdeaModelUtilsKt.runConfigurations(settings, runConfigurations -> {
                     Application runConfig = runConfigurations.maybeCreate(taskName, Application.class);

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.Internal;
+import org.gradle.internal.os.OperatingSystem;
 import org.gradle.process.ExecResult;
 
 import java.io.File;
@@ -46,6 +47,9 @@ public class RunGameTask extends BaseTask {
             exec.setEnvironment(env);
             exec.setWorkingDir(runDir);
             exec.setClasspath(project.getConfigurations().getByName("runtimeClasspath").plus(project.getConfigurations().getByName("compileClasspath")));
+            if (OperatingSystem.current() == OperatingSystem.LINUX) {
+                exec.environment("DISPLAY", ":0");
+            }
         });
         result.assertNormalExitValue();
     }
